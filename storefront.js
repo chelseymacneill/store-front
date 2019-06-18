@@ -17,8 +17,8 @@ connection.connect(function(err) {
     if (err) throw err;
     // If successful connect 
     console.log("Connected as id" + connection.threadId);
-   // run a function after the connection is made to prompt the user
-   start();
+    // run a function after the connection is made to prompt the user
+    start();
 });
 
 // function which prompts the user for what action they should take
@@ -38,7 +38,7 @@ function start() {
         }
         else if (answer.printMenuOrBuy === "Buy an Item") {
             // run function for buying
-
+            buyAnItem();
         } 
         else if (answer.printMenuOrBuy === "Exit") {
             connection.end()
@@ -47,7 +47,7 @@ function start() {
 }
 
 
-//---------------------------------------------
+
 
 // Function for displaying all items in the current products db
 function displayItems(){
@@ -60,10 +60,57 @@ function displayItems(){
             "\nItem Name:" + res[i].product_name + " | " + res[i].department_name + " | " + res[i].price + " | " + res[i].unit_count + " | " + res[i].stock_quantity
             + "\n -----------------------")
         }
-        // End the connection when tasks are complete
-       // connection.end();
+        // re-prompt the user for what they want to do
+        start();
     })
 };
+
+// function that runs when a user wants to buy something
+function buyAnItem() {
+    // query the database for all item_ids for sale
+    connection.query("SELECT * from products", function(err, results){
+        if (err) throw (err);
+        //prompt the user for which items they'd like to buy 
+        inquirer
+        .prompt([
+            {
+                name: "choice",
+                type: "rawlist",
+                choices: function() {
+                    let choiceArray = [];
+                    for (var i=0; i < results.length; i++) {
+                        choiceArray.push(results[i].item_id);
+                    }
+                    return choiceArray;
+                },
+                message: "What item would you like to buy?",
+                validate : function(value) {
+                    if (isNaN(value)=== false){
+                        return true;
+                    }
+                    return false;
+                }
+            },
+            {
+                name: "quantity",
+                type: "input",
+                message: "How much would you like to order?"
+            }
+        ])
+        .then(function(answer) {
+            // get information of the item they want to buy
+            console.log("This is happeninging")
+            
+            // re-prompt the user for if they want to bid or post
+            start();
+            
+        })
+    });
+};
+
+
+
+
 
 
 
@@ -91,13 +138,13 @@ function buy() {
             // based on the answer search the db for the item chosen
             console.log("This is the answer :" + JSON.stringify(answer))
             console.log("These are the results :" + JSON.stringify(results))
-
-            console.log(answer.);
+            
+            console.log(answer);
             console.log(answer.itemBuy.val)
-
+            
             // Set chosen item equal to the product the customer chose
             //let chosenItem = answer[]
-
+            
             //make sure there are enough items for sale as the user wants
             // if (chosenItem.stock_quantity >= parseInt(answer.orderAmount)) {
             //     console.log("Order in stock");
@@ -122,29 +169,29 @@ function buy() {
             //         // if the user wants more than what is in stock
             //         console.log("There aren't that many in stock")
             //     }
-            });
         });
-    };
-    
-    
-    // (Admin only) Function for Admin only to add new products to the db
-    function createProduct() {
-        console.log("Inserting a new product...\n");
-        var query = connection.query(
-            "INSERT INTO products SET ?",
-            {
-                product_name: "Rocky Road",
-                price: 3.0,
-                stock_quantity: 50
-            },
-            function(err, res) {
-                if (err) throw err;
-                console.log(res.affectedRows + " product inserted!\n");
-                // Call updateProduct AFTER the INSERT completes
-                updateProduct();
-            }
-            )};
-            
-            
-            
-            
+    });
+};
+
+
+// (Admin only) Function for Admin only to add new products to the db
+function createProduct() {
+    console.log("Inserting a new product...\n");
+    var query = connection.query(
+        "INSERT INTO products SET ?",
+        {
+            product_name: "Rocky Road",
+            price: 3.0,
+            stock_quantity: 50
+        },
+        function(err, res) {
+            if (err) throw err;
+            console.log(res.affectedRows + " product inserted!\n");
+            // Call updateProduct AFTER the INSERT completes
+            updateProduct();
+        }
+        )};
+        
+        
+        
+        
