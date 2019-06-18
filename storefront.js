@@ -79,7 +79,7 @@ function buyAnItem() {
                 choices: function() {
                     let choiceArray = [];
                     for (var i=0; i < results.length; i++) {
-                        choiceArray.push(results[i].item_id);
+                        choiceArray.push(results[i].item_id + "- " + results[i].product_name);
                     }
                     return choiceArray;
                 },
@@ -101,97 +101,111 @@ function buyAnItem() {
             // get information of the item they want to buy
             console.log("This is happeninging")
             
-            // re-prompt the user for if they want to bid or post
-            start();
-            
+            console.log(answer.choice[0]) // This is the id of the item chosen
+            let chosenItem = answer.choice[0]
+            // compare the quantity of how many they want to buy
+            if (chosenItem.stock_quantity >= parseInt(answer.quantity)) {
+                // bid was within what is in stock so purchase can go through
+                connection.query(
+                    "UPDATE auctions SET ? WHERE ?",
+                    [
+                        {stock_quantity: stock_quantity - answer.quantity},
+                        {item_id : chosenItem}
+                    ],
+                    function (error) {
+                        if (error) throw err;
+                        console.log("Items Purchased successfully!")
+                        start();
+                    });
+                }
+                else {
+                    // the quantity chosen was higher than what was in stock
+                    console.log("There are only items in stock for  Try again.")
+                    // propmpt them to try again
+                    start();
+                }
+            })  
         })
-    });
-};
-
-
-
-
-
-
-
-// Function to buy an item
-function buy() {
-    connection.query("SELECT * FROM products", function(err, results){
-        if (err) throw err; 
-        // print out results 
-        
-        // once you have the items, prompt the user for which they'd like to bid on
-        inquirer
-        .prompt([
-            {
-                name: "itemBuy",
-                type : "input",
-                message: "What item would you like to buy (Enter an item id) ?"
-            },
-            { 
-                name: "orderAmount",
-                type: "input",
-                message: "How many would you like?"
-            }
-        ])
-        .then(function(answer) {
-            // based on the answer search the db for the item chosen
-            console.log("This is the answer :" + JSON.stringify(answer))
-            console.log("These are the results :" + JSON.stringify(results))
+    };
+    
+    // Function to buy an item
+    function buy() {
+        connection.query("SELECT * FROM products", function(err, results){
+            if (err) throw err; 
+            // print out results 
             
-            console.log(answer);
-            console.log(answer.itemBuy.val)
-            
-            // Set chosen item equal to the product the customer chose
-            //let chosenItem = answer[]
-            
-            //make sure there are enough items for sale as the user wants
-            // if (chosenItem.stock_quantity >= parseInt(answer.orderAmount)) {
-            //     console.log("Order in stock");
-            //     // calculate new stock quantity 
-            //     let newStockQuantity = chosenItem.stock_quantity - parseInt(answer.orderAmount);
-            //     // there is enough in stock to fill the order
-            //     connection.query(
-            //         "UPDATE products SET ? WHERE ?", 
-            //         [
-            //             {
-            //                 stock_quantity : newStockQuantity
-            //             },
-            //             { id: chosenItem.item_id
-            //             }
-            //         ],
-            //         function(error) {
-            //             if (error) throw err;
-            //             console.log("Order placed successfully!");
-            //         });
-            //     }
-            //     else { 
-            //         // if the user wants more than what is in stock
-            //         console.log("There aren't that many in stock")
-            //     }
+            // once you have the items, prompt the user for which they'd like to bid on
+            inquirer
+            .prompt([
+                {
+                    name: "itemBuy",
+                    type : "input",
+                    message: "What item would you like to buy (Enter an item id) ?"
+                },
+                { 
+                    name: "orderAmount",
+                    type: "input",
+                    message: "How many would you like?"
+                }
+            ])
+            .then(function(answer) {
+                // based on the answer search the db for the item chosen
+                console.log("This is the answer :" + JSON.stringify(answer))
+                console.log("These are the results :" + JSON.stringify(results))
+                
+                console.log(answer);
+                console.log(answer.itemBuy.val)
+                
+                // Set chosen item equal to the product the customer chose
+                //let chosenItem = answer[]
+                
+                //make sure there are enough items for sale as the user wants
+                // if (chosenItem.stock_quantity >= parseInt(answer.orderAmount)) {
+                //     console.log("Order in stock");
+                //     // calculate new stock quantity 
+                //     let newStockQuantity = chosenItem.stock_quantity - parseInt(answer.orderAmount);
+                //     // there is enough in stock to fill the order
+                //     connection.query(
+                //         "UPDATE products SET ? WHERE ?", 
+                //         [
+                //             {
+                //                 stock_quantity : newStockQuantity
+                //             },
+                //             { id: chosenItem.item_id
+                //             }
+                //         ],
+                //         function(error) {
+                //             if (error) throw err;
+                //             console.log("Order placed successfully!");
+                //         });
+                //     }
+                //     else { 
+                //         // if the user wants more than what is in stock
+                //         console.log("There aren't that many in stock")
+                //     }
+            });
         });
-    });
-};
-
-
-// (Admin only) Function for Admin only to add new products to the db
-function createProduct() {
-    console.log("Inserting a new product...\n");
-    var query = connection.query(
-        "INSERT INTO products SET ?",
-        {
-            product_name: "Rocky Road",
-            price: 3.0,
-            stock_quantity: 50
-        },
-        function(err, res) {
-            if (err) throw err;
-            console.log(res.affectedRows + " product inserted!\n");
-            // Call updateProduct AFTER the INSERT completes
-            updateProduct();
-        }
-        )};
-        
-        
-        
-        
+    };
+    
+    
+    // (Admin only) Function for Admin only to add new products to the db
+    function createProduct() {
+        console.log("Inserting a new product...\n");
+        var query = connection.query(
+            "INSERT INTO products SET ?",
+            {
+                product_name: "Rocky Road",
+                price: 3.0,
+                stock_quantity: 50
+            },
+            function(err, res) {
+                if (err) throw err;
+                console.log(res.affectedRows + " product inserted!\n");
+                // Call updateProduct AFTER the INSERT completes
+                updateProduct();
+            }
+            )};
+            
+            
+            
+            
