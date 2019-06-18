@@ -16,7 +16,8 @@ CREATE TABLE products (
   price DECIMAL(6,2) NULL,
   unit_count INT NULL,
   -- # of units in stock
-  stock_quantity INT NULL 
+  stock_quantity INT NULL,
+  Primary key (item_id)
 
 );
 
