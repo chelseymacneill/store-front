@@ -32,8 +32,8 @@ function displayItems(){
         // Display the results nicely 
         for (var i=0; i < res.length; i++) {
             console.log("Item ID:" + res[i].item_id  + 
-             "\nItem Name:" + res[i].product_name + " | " + res[i].department_name + " | " + res[i].price + " | " + res[i].unit_count + " | " + res[i].stock_quantity
-             + "\n -----------------------")
+            "\nItem Name:" + res[i].product_name + " | " + res[i].department_name + " | " + res[i].price + " | " + res[i].unit_count + " | " + res[i].stock_quantity
+            + "\n -----------------------")
         }
         // End the connection when tasks are complete
         connection.end();
@@ -53,49 +53,98 @@ function menu() {
         if (answer.buyOrNot === "YES") {
             console.log("BUY");
             // insert function for buy here
+            buy()
         }
         else if (answer.buyOrNot === "NO") {
             console.log("Ok. Have a great day")
             // insert function for NO here
         } else {
-            connection.end();
+            //connection.end();
             console.log("Connection ended")
         }
     });
 }
 
 // Function to buy an item
-function buyHowMuch() {
-    inquirer.prompt({
-        name: "buyHowMuch",
-        type : "number",
-        message: "What item would you like to buy?"
-    })
-    .then(function(answer) {
-        // based on the answer search the db for the item chosen
-        
-
-    })
-    ;
-}
-
-// (Admin only) Function for Admin only to add new products to the db
-function createProduct() {
-    console.log("Inserting a new product...\n");
-    var query = connection.query(
-      "INSERT INTO products SET ?",
-      {
-        product_name: "Rocky Road",
-        price: 3.0,
-        stock_quantity: 50
-      },
-      function(err, res) {
-        if (err) throw err;
-        console.log(res.affectedRows + " product inserted!\n");
-        // Call updateProduct AFTER the INSERT completes
-        updateProduct();
-      }
-    )};
-
-
-
+function buy() {
+    connection.query("SELECT * FROM products", function(err, results){
+        if (err) throw err; 
+        // once you have the items, prompt the user for which they'd like to bid on
+        inquirer
+        .prompt([
+            {
+                name: "orderItem",
+                type : "rawlist",
+                choices: function() {
+                    let choiceArray = [];
+                    for (var i = 0; i < results.length; i++) {
+                        choiceArray.push(results[i].item_id);
+                    }
+                    return choiceArray;
+                },
+                message: "What item would you like to buy?"
+            },
+            { 
+                name: "orderAmount",
+                type: "input",
+                message: "How many would you like?"
+            }
+        ])
+        .then(function(answer) {
+            // based on the answer search the db for the item chosen
+            var chosenItem;
+            for (var i = 0; i < results.length; i++){
+                if (results[i].product_name === answer.choice) {
+                    chosenItem = results[i];
+                }
+            }
+            // make sure there are enough items for sale as the user wants
+            if (chosenItem.stock_quantity >= parseInt(answer.orderAmount)) {
+                console.log("Order in stock");
+                // calculate new stock quantity 
+                let newStockQuantity = chosenItem.stock_quantity - parseInt(answer.orderAmount);
+                // there is enough in stock to fill the order
+                connection.query(
+                    "UPDATE products SET ? WHERE ?", 
+                    [
+                        {
+                            stock_quantity : newStockQuantity
+                        },
+                        { id: chosenItem.item_id
+                        }
+                    ],
+                    function(error) {
+                        if (error) throw err;
+                        console.log("Order placed successfully!");
+                    });
+                }
+                else { 
+                    // if the user wants more than what is in stock
+                    console.log("There aren't that many in stock")
+                }
+            });
+        });
+    };
+    
+    
+    // (Admin only) Function for Admin only to add new products to the db
+    function createProduct() {
+        console.log("Inserting a new product...\n");
+        var query = connection.query(
+            "INSERT INTO products SET ?",
+            {
+                product_name: "Rocky Road",
+                price: 3.0,
+                stock_quantity: 50
+            },
+            function(err, res) {
+                if (err) throw err;
+                console.log(res.affectedRows + " product inserted!\n");
+                // Call updateProduct AFTER the INSERT completes
+                updateProduct();
+            }
+            )};
+            
+            
+            
+            
