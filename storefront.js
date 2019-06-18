@@ -17,12 +17,37 @@ connection.connect(function(err) {
     if (err) throw err;
     // If successful connect 
     console.log("Connected as id" + connection.threadId);
-    //Put a function here for what you want to run upon connecting
-    // Upon connection always display the current inventory summary
-    displayItems();
-    // Then give the user a choice for what to do next 
-    menu();
-})
+   // run a function after the connection is made to prompt the user
+   start();
+});
+
+// function which prompts the user for what action they should take
+function start() {
+    inquirer
+    .prompt({
+        name: "printMenuOrBuy",
+        type: "list",
+        message: "Would you like to [Print Menu] or [Buy an Item] ?",
+        choices: ["Print Menu", "Buy an Item", "Exit"]
+    })
+    .then(function(answer) {
+        // based on users answer call chosen function
+        if (answer.printMenuOrBuy === "Print Menu") {
+            // run function for menu print
+            displayItems();
+        }
+        else if (answer.printMenuOrBuy === "Buy an Item") {
+            // run function for buying
+
+        } 
+        else if (answer.printMenuOrBuy === "Exit") {
+            connection.end()
+        }
+    })
+}
+
+
+//---------------------------------------------
 
 // Function for displaying all items in the current products db
 function displayItems(){
@@ -36,53 +61,25 @@ function displayItems(){
             + "\n -----------------------")
         }
         // End the connection when tasks are complete
-        connection.end();
+       // connection.end();
     })
 };
 
-// Menu of option for the user to control the program 
-function menu() {
-    inquirer.prompt({
-        name: "buyOrNot",
-        type: "list",
-        message:"Would you like to buy and item? ",
-        choices: ["YES", "NO"]
-    })
-    .then(function(answer) {
-        // based on their answer call the corresponding function
-        if (answer.buyOrNot === "YES") {
-            console.log("BUY");
-            // insert function for buy here
-            buy()
-        }
-        else if (answer.buyOrNot === "NO") {
-            console.log("Ok. Have a great day")
-            // insert function for NO here
-        } else {
-            //connection.end();
-            console.log("Connection ended")
-        }
-    });
-}
+
 
 // Function to buy an item
 function buy() {
     connection.query("SELECT * FROM products", function(err, results){
         if (err) throw err; 
+        // print out results 
+        
         // once you have the items, prompt the user for which they'd like to bid on
         inquirer
         .prompt([
             {
-                name: "orderItem",
-                type : "rawlist",
-                choices: function() {
-                    let choiceArray = [];
-                    for (var i = 0; i < results.length; i++) {
-                        choiceArray.push(results[i].item_id);
-                    }
-                    return choiceArray;
-                },
-                message: "What item would you like to buy?"
+                name: "itemBuy",
+                type : "input",
+                message: "What item would you like to buy (Enter an item id) ?"
             },
             { 
                 name: "orderAmount",
@@ -92,36 +89,39 @@ function buy() {
         ])
         .then(function(answer) {
             // based on the answer search the db for the item chosen
-            var chosenItem;
-            for (var i = 0; i < results.length; i++){
-                if (results[i].product_name === answer.choice) {
-                    chosenItem = results[i];
-                }
-            }
-            // make sure there are enough items for sale as the user wants
-            if (chosenItem.stock_quantity >= parseInt(answer.orderAmount)) {
-                console.log("Order in stock");
-                // calculate new stock quantity 
-                let newStockQuantity = chosenItem.stock_quantity - parseInt(answer.orderAmount);
-                // there is enough in stock to fill the order
-                connection.query(
-                    "UPDATE products SET ? WHERE ?", 
-                    [
-                        {
-                            stock_quantity : newStockQuantity
-                        },
-                        { id: chosenItem.item_id
-                        }
-                    ],
-                    function(error) {
-                        if (error) throw err;
-                        console.log("Order placed successfully!");
-                    });
-                }
-                else { 
-                    // if the user wants more than what is in stock
-                    console.log("There aren't that many in stock")
-                }
+            console.log("This is the answer :" + JSON.stringify(answer))
+            console.log("These are the results :" + JSON.stringify(results))
+
+            console.log(answer.);
+            console.log(answer.itemBuy.val)
+
+            // Set chosen item equal to the product the customer chose
+            //let chosenItem = answer[]
+
+            //make sure there are enough items for sale as the user wants
+            // if (chosenItem.stock_quantity >= parseInt(answer.orderAmount)) {
+            //     console.log("Order in stock");
+            //     // calculate new stock quantity 
+            //     let newStockQuantity = chosenItem.stock_quantity - parseInt(answer.orderAmount);
+            //     // there is enough in stock to fill the order
+            //     connection.query(
+            //         "UPDATE products SET ? WHERE ?", 
+            //         [
+            //             {
+            //                 stock_quantity : newStockQuantity
+            //             },
+            //             { id: chosenItem.item_id
+            //             }
+            //         ],
+            //         function(error) {
+            //             if (error) throw err;
+            //             console.log("Order placed successfully!");
+            //         });
+            //     }
+            //     else { 
+            //         // if the user wants more than what is in stock
+            //         console.log("There aren't that many in stock")
+            //     }
             });
         });
     };
