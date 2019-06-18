@@ -42,25 +42,41 @@ function displayItems(){
 
 // Menu of option for the user to control the program 
 function menu() {
-    inquirer
-    .prompt({
-        name: "buyAndHowMuch",
+    inquirer.prompt({
+        name: "buyOrNot",
         type: "list",
         message:"Would you like to buy and item? ",
         choices: ["YES", "NO"]
     })
     .then(function(answer) {
         // based on their answer call the corresponding function
-        if (answer.buyAndHowMuch === "YES") {
+        if (answer.buyOrNot === "YES") {
             console.log("BUY");
+            // insert function for buy here
         }
-        else if (answer.buyAndHowMuch === "NO") {
-            console.log("NO")
+        else if (answer.buyOrNot === "NO") {
+            console.log("Ok. Have a great day")
+            // insert function for NO here
         } else {
             connection.end();
             console.log("Connection ended")
         }
     });
+}
+
+// Function to buy an item
+function buyHowMuch() {
+    inquirer.prompt({
+        name: "buyHowMuch",
+        type : "number",
+        message: "What item would you like to buy?"
+    })
+    .then(function(answer) {
+        // based on the answer search the db for the item chosen
+        
+
+    })
+    ;
 }
 
 // (Admin only) Function for Admin only to add new products to the db
