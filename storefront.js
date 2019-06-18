@@ -41,11 +41,26 @@ function displayItems(){
 };
 
 // Menu of option for the user to control the program 
-function start() {
+function menu() {
     inquirer
     .prompt({
-        name:
+        name: "buyAndHowMuch",
+        type: "list",
+        message:"Would you like to buy and item? ",
+        choices: ["YES", "NO"]
     })
+    .then(function(answer) {
+        // based on their answer call the corresponding function
+        if (answer.buyAndHowMuch === "YES") {
+            console.log("BUY");
+        }
+        else if (answer.buyAndHowMuch === "NO") {
+            console.log("NO")
+        } else {
+            connection.end();
+            console.log("Connection ended")
+        }
+    });
 }
 
 // (Admin only) Function for Admin only to add new products to the db
@@ -64,7 +79,7 @@ function createProduct() {
         // Call updateProduct AFTER the INSERT completes
         updateProduct();
       }
-    );
+    )};
 
 
 
