@@ -83,11 +83,6 @@ function buyAnItem() {
                     }
                     return false;
                 }
-            },
-            {
-                name: "quantity",
-                type: "input",
-                message: "How much would you like to order?"
             }
         ])
         .then(function(answer) {
@@ -95,77 +90,46 @@ function buyAnItem() {
             let choiceId = parseInt(answer.choice)
             
             var query = "SELECT * FROM products WHERE ? "
-            connection.query(query, {item_id: choiceID}, function(err, response) {
+            connection.query(query, {item_id: choiceId}, function(err, response) {
                 // function for purchase quantity
                 purchaseQuantity(choiceId, response[0].price, response[0].stock_quantity);
             })
-            
-            // testing things
-            console.log(chosenItem)
-            console.log("R" + results[i])
-            console.log(results)
-            console.log("Chosen Item" + chosenItem);
-            console.log("Chosen Item starting bid" + chosenItem.product_name)
-            
-            // compare the quantity of how many they want to buy
-            if (chosenItem.stock_quantity >= parseInt(answer.quantity)) {
-                console.log("This how much the person wants: " + answer.quantity)
-                console.log("This is the amount in stock: " + chosenItem.stock_quantity)
-                // bid was within what is in stock so purchase can go through
-                connection.query(
-                    "UPDATE auctions SET ? WHERE ?",
-                    [
-                        {stock_quantity: 5},
-                        {item_id : chosenItem}
-                    ],
-                    function (error) {
-                        if (error) throw err;
-                        console.log("Items Purchased successfully!")
-                        start();
-                    });
-                }
-                else {
-                    console.log("This is the answer quantity in stock: " + answer.quantity)
-                    console.log("This is the amount in stock: " + chosenItem.stock_quantity)
-                    // the quantity chosen was higher than what was in stock
-                    console.log("There are only items in stock for  Try again.")
-                    // propmpt them to try again
-                    start();
-                }
-            })  
-        })
-    };
-    
-    
-    // function for capturing how much of an item a user wants to purchase
-    function purchaseQuantity(itemId, price, stock_quantity) {
-        inquirer
-        .prompt([
-            {
-                name : "quantity",
-                type: "number",
-                message: "How much of this procudt so you want?"
-            }
-        ])
-        .then(function (answer) {
-            var quantity = parseInt(answer.quantity);
-            
-            if(quantity < stock_quantity.Quantity) {
-                completePurchase(itemId, price, stockQuantity, quantity);
-                
-            } else {
-                console.log("the amount you requested is not in stock");
-            }
-        })
-    };
-    
-    // Function to calculate to purchase total
-    function completePurchase(itemId, price, stockQuantity, quantity) {
-        console.log("Your total is:" + price*quantity);
-        var updateStock = stockQuantity - quantity;
-        var query = "UPDATE products SET ? WHERE ?"
-        connection.query(query, [{ stock_quantity: updateStock}, {item_id: itemId}]), function (err, response){
-            if (err) throw (err);
-            connection.end();
+        });
+    });
+};
+
+
+// function for capturing how much of an item a user wants to purchase
+function purchaseQuantity(itemId, price, stock_quantity) {
+    inquirer
+    .prompt([
+        {
+            name : "quantity",
+            type: "number",
+            message: "How much of this product do you want?"
         }
-    };
+    ])
+    .then(function (answer) {
+        var quantity = parseInt(answer.quantity);
+        
+        if(quantity <= stock_quantity.quantity) {
+            completePurchase(itemId, price, stock_quantity, quantity);
+            
+        } else {
+            console.log("the amount you requested is not in stock");
+            console.log(parseInt(quantity))
+            start();
+        }
+    })
+};
+
+// Function to calculate to purchase total
+function completePurchase(itemId, price, stockQuantity, quantity) {
+    console.log("Your total is:" + price*quantity);
+    var updateStock = stockQuantity - quantity;
+    var query = "UPDATE products SET ? WHERE ?"
+    connection.query(query, [{ stock_quantity: updateStock}, {item_id: itemId}]), function (err, response){
+        if (err) throw (err);
+        connection.end();
+    }
+};
