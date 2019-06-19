@@ -45,9 +45,6 @@ function start() {
     })
 }
 
-
-
-
 // Function for displaying all items in the current products db
 function displayItems(){
     connection.query("SELECT * FROM products", function(err,res) {
@@ -60,25 +57,6 @@ function displayItems(){
         
     })
 };
-
-// displaying the data in a table 
-function displayTable() {
-    connnection.query("SELECT * FROM products", function(err,res){
-        if (err) throw err; 
-        
-        // var table = new table({
-        //     head: ["item_id", "product_name", "department_name", "price", "stock_quantity"],
-        //     colWidths: [10,30,30,10,20],
-        //     style: {
-        //         head: ['green'],
-        //         compact: true
-        //     }
-        // })
-        
-        // display the table 
-        console.table(res)
-    })
-}
 
 // function that runs when a user wants to buy something
 function buyAnItem() {
@@ -122,8 +100,6 @@ function buyAnItem() {
                 purchaseQuantity(choiceId, response[0].price, response[0].stock_quantity);
             })
             
-            
-            
             // testing things
             console.log(chosenItem)
             console.log("R" + results[i])
@@ -160,8 +136,8 @@ function buyAnItem() {
         })
     };
     
-
-    // 
+    
+    // function for capturing how much of an item a user wants to purchase
     function purchaseQuantity(itemId, price, stock_quantity) {
         inquirer
         .prompt([
@@ -183,7 +159,7 @@ function buyAnItem() {
         })
     };
     
-    // 
+    // Function to calculate to purchase total
     function completePurchase(itemId, price, stockQuantity, quantity) {
         console.log("Your total is:" + price*quantity);
         var updateStock = stockQuantity - quantity;
