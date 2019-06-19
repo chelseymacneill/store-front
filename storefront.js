@@ -114,13 +114,15 @@ function buyAnItem() {
         ])
         .then(function(answer) {
             // get information of the item they want to buy
+            let choiceId = parseInt(answer.choice)
             
-            let chosenItem;
-            for (var i = 0; i < results.length; i++) {
-                if(results[i].item_id === answer.choice) {
-                    chosenItem = results[i];
-                }
-            };
+            var query = "SELECT * FROM products WHERE ? "
+            connection.query(query, {item_id: choiceID}, function(err, response) {
+                // function for purchase quantity
+                purchaseQuantity(choiceId, response[0].price, response[0].stock_quantity);
+            })
+            
+            
             
             // testing things
             console.log(chosenItem)
@@ -159,7 +161,35 @@ function buyAnItem() {
     };
     
 
+    // 
+    function purchaseQuantity(itemId, price, stock_quantity) {
+        inquirer
+        .prompt([
+            {
+                name : "quantity",
+                type: "number",
+                message: "How much of this procudt so you want?"
+            }
+        ])
+        .then(function (answer) {
+            var quantity = parseInt(answer.quantity);
             
-            
-            
-            
+            if(quantity < stock_quantity.Quantity) {
+                completePurchase(itemId, price, stockQuantity, quantity);
+                
+            } else {
+                console.log("the amount you requested is not in stock");
+            }
+        })
+    };
+    
+    // 
+    function completePurchase(itemId, price, stockQuantity, quantity) {
+        console.log("Your total is:" + price*quantity);
+        var updateStock = stockQuantity - quantity;
+        var query = "UPDATE products SET ? WHERE ?"
+        connection.query(query, [{ stock_quantity: updateStock}, {item_id: itemId}]), function (err, response){
+            if (err) throw (err);
+            connection.end();
+        }
+    };
